@@ -1,5 +1,6 @@
 using HavenSoft.HexManiac.Core.Models;
 using HavenSoft.HexManiac.Core.Services;
+using HavenSoft.HexManiac.Core.ViewModels.Map;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading;
@@ -86,7 +87,11 @@ namespace HavenSoft.HexManiac.Core.ViewModels.Tools {
             "- Change a Pokemon's stats\n" +
             "- Modify trainer teams\n" +
             "- Edit items or moves\n\n" +
-            "Make sure to set your Claude API key first."));
+            "With Map Editor open, I can also:\n" +
+            "- Move or modify NPCs\n" +
+            "- Edit wild Pokemon encounters\n" +
+            "- Modify warps and signposts\n\n" +
+            "Set your Claude API key to get started."));
       }
 
       public async Task SendMessageAsync() {
@@ -192,7 +197,17 @@ Keep code simple and focused on the specific request.";
 
          var model = viewPort.Model;
          var gameCode = model.GetGameCode();
-         return $"ROM: {gameCode}";
+         var context = $"ROM: {gameCode}";
+
+         // Check if Map Editor is open
+         if (editor.SelectedTab is MapEditorViewModel mapEditor) {
+            context += "\nMap Editor is OPEN.";
+            if (mapEditor.PrimaryMap != null) {
+               context += $"\nCurrent map: Bank {mapEditor.PrimaryMap.MapGroup}, Map {mapEditor.PrimaryMap.MapIndex}";
+            }
+         }
+
+         return context;
       }
 
       private string BuildSchema() {
@@ -201,8 +216,9 @@ Keep code simple and focused on the specific request.";
             return "No tables available.";
          }
 
-         // MVP: hardcoded common tables
-         return @"data.pokemon.stats: hp, attack, defense, speed, spAttack, spDefense, type1, type2, catchRate, baseExp, evYield, item1, item2, abilities
+         // Base Pokemon/trainer tables
+         var schema = @"=== Pokemon & Trainer Data ===
+data.pokemon.stats: hp, attack, defense, speed, spAttack, spDefense, type1, type2, catchRate, baseExp, evYield, item1, item2, abilities
 data.pokemon.names: name (text)
 data.pokemon.moves.levelup: [pokemon][move, level]
 data.trainers.stats: pokemon (team pointer), ai, class, items
@@ -210,6 +226,50 @@ data.trainers.pokemon: ivSpread, level, pokemon, item, moves
 data.items.stats: name, price, holdEffect, parameter, pocket
 data.pokemon.moves.names: name (text)
 data.pokemon.moves.stats: power, type, accuracy, pp, effect";
+
+         // Add map schema if Map Editor is open
+         if (editor.SelectedTab is MapEditorViewModel) {
+            schema += @"
+
+=== Map Data (Map Editor is open) ===
+Access pattern: data.maps.banks[bankNum].maps[mapNum].map.events
+
+Object Events (NPCs):
+  .events.objects[i]: id, graphics, x, y, elevation, moveType, range, trainerType, trainerRangeOrBerryID, script, flag
+  - graphics: sprite ID from graphics.overworld.sprites
+  - x, y: position on map (0-based)
+  - moveType: 0=none, 1=look_around, 2=walk_around, etc.
+  - script: pointer to XSE script (what happens on interaction)
+  - flag: event flag (NPC hidden when flag is set)
+
+Warps:
+  .events.warps[i]: x, y, elevation, warpID, map, bank
+  - warpID: destination warp point ID
+  - map, bank: destination map coordinates
+
+Script Triggers:
+  .events.scripts[i]: x, y, elevation, trigger, index, script
+
+Signposts:
+  .events.signposts[i]: x, y, elevation, kind, arg
+  - kind: 0-4=script signpost, 5-7=hidden item, 8=secret base
+  - arg: script pointer or item ID depending on kind
+
+Wild Pokemon:
+  data.pokemon.wild[mapId].grass.list[i]: low (min level), high (max level), species
+  data.pokemon.wild[mapId].surf.list[i]: same structure
+  data.pokemon.wild[mapId].fish.list[i]: same structure (0-1=old rod, 2-4=good rod, 5+=super rod)
+
+Example - Add NPC that gives item:
+  events = data.maps.banks[3].maps[0].map.events
+  npc = events.objects[0]  # modify existing or find empty slot
+  npc.x = 10
+  npc.y = 8
+  npc.graphics = 5  # sprite ID
+  npc.moveType = 1  # look around";
+         }
+
+         return schema;
       }
 
       public void Close() => editor.ShowLLMPanel = false;
