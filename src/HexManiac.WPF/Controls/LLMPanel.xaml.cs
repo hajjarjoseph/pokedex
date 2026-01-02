@@ -1,4 +1,5 @@
 using HavenSoft.HexManiac.Core.ViewModels.Tools;
+using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -7,11 +8,21 @@ namespace HavenSoft.HexManiac.WPF.Controls {
       public LLMPanel() {
          InitializeComponent();
          DataContextChanged += (s, e) => {
+            if (e.OldValue is LLMTool oldTool) {
+               oldTool.PropertyChanged -= OnToolPropertyChanged;
+            }
             if (DataContext is LLMTool tool) {
                ApiKeyBox.Password = tool.ApiKey;
                tool.Messages.CollectionChanged += (_, _) => ScrollToBottom();
+               tool.PropertyChanged += OnToolPropertyChanged;
             }
          };
+      }
+
+      private void OnToolPropertyChanged(object sender, PropertyChangedEventArgs e) {
+         if (e.PropertyName == nameof(LLMTool.IsProcessing)) {
+            ScrollToBottom();
+         }
       }
 
       private void InputKeyDown(object sender, KeyEventArgs e) {

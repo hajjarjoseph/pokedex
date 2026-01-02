@@ -173,8 +173,20 @@ Keep code simple and focused on the specific request.";
          return assistantMessage;
       }
 
+      private IViewPort FindViewPort() {
+         // First check selected tab
+         if (editor.SelectedTab is IViewPort vp) return vp;
+
+         // If selected tab is not a ViewPort (e.g., MapEditor), find one from all tabs
+         foreach (var tab in editor) {
+            if (tab is IViewPort viewPort) return viewPort;
+         }
+         return null;
+      }
+
       private string BuildContext() {
-         if (editor.SelectedTab is not IViewPort viewPort) {
+         var viewPort = FindViewPort();
+         if (viewPort == null) {
             return "No ROM loaded.";
          }
 
@@ -184,7 +196,8 @@ Keep code simple and focused on the specific request.";
       }
 
       private string BuildSchema() {
-         if (editor.SelectedTab is not IViewPort viewPort) {
+         var viewPort = FindViewPort();
+         if (viewPort == null) {
             return "No tables available.";
          }
 

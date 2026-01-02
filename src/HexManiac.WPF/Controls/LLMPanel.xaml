@@ -35,6 +35,7 @@
 
       <!-- Messages list -->
       <ScrollViewer Grid.Row="1" x:Name="MessagesScroller" VerticalScrollBarVisibility="Auto" Margin="5">
+         <StackPanel>
          <ItemsControl ItemsSource="{Binding Messages}">
             <ItemsControl.ItemTemplate>
                <DataTemplate>
@@ -69,6 +70,42 @@
                </DataTemplate>
             </ItemsControl.ItemTemplate>
          </ItemsControl>
+
+         <!-- Loading indicator -->
+         <Border Margin="0,0,0,10" Padding="8" CornerRadius="4"
+                 Background="{DynamicResource Backlight}"
+                 Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel>
+               <TextBlock FontWeight="Bold" Margin="0,0,0,4"
+                          Foreground="{DynamicResource Accent}"
+                          Text="Assistant"/>
+               <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="Thinking" Foreground="{DynamicResource Secondary}" FontStyle="Italic"/>
+                  <TextBlock x:Name="LoadingDots" Text="..." Foreground="{DynamicResource Secondary}" FontStyle="Italic">
+                     <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                           <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                 <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                       <Storyboard RepeatBehavior="Forever">
+                                          <StringAnimationUsingKeyFrames Storyboard.TargetProperty="Text" Duration="0:0:1.5">
+                                             <DiscreteStringKeyFrame Value="." KeyTime="0:0:0"/>
+                                             <DiscreteStringKeyFrame Value=".." KeyTime="0:0:0.5"/>
+                                             <DiscreteStringKeyFrame Value="..." KeyTime="0:0:1"/>
+                                          </StringAnimationUsingKeyFrames>
+                                       </Storyboard>
+                                    </BeginStoryboard>
+                                 </DataTrigger.EnterActions>
+                              </DataTrigger>
+                           </Style.Triggers>
+                        </Style>
+                     </TextBlock.Style>
+                  </TextBlock>
+               </StackPanel>
+            </StackPanel>
+         </Border>
+         </StackPanel>
       </ScrollViewer>
 
       <!-- Error message -->
