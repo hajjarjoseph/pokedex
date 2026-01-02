@@ -30,7 +30,7 @@ namespace HavenSoft.HexManiac.Core.ViewModels.Tools {
       public bool IsProcessing {
          get => isProcessing;
          set {
-            if (Set(ref isProcessing, value)) {
+            if (TryUpdate(ref isProcessing, value)) {
                sendCommand.RaiseCanExecuteChanged();
                cancelCommand.RaiseCanExecuteChanged();
             }
@@ -41,7 +41,7 @@ namespace HavenSoft.HexManiac.Core.ViewModels.Tools {
       public string ErrorMessage {
          get => errorMessage;
          set {
-            if (Set(ref errorMessage, value)) {
+            if (TryUpdate(ref errorMessage, value)) {
                NotifyPropertyChanged(nameof(HasError));
             }
          }
