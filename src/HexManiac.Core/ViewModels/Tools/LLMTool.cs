@@ -206,7 +206,7 @@ Keep code simple and focused on the specific request.";
             var mapNum = map.MapID % 1000;
             context += $"\n\n=== MAP EDITOR OPEN ===";
             context += $"\nCurrent map: Bank {bankNum}, Map {mapNum}";
-            context += $"\nAccess via: data.maps.banks[{bankNum}].maps[{mapNum}].map.events";
+            context += $"\nAccess via: data.maps.banks[{bankNum}].maps[{mapNum}].map[0].events[0]";
 
             // List all events on the map
             context += BuildMapContents(mapEditor);
@@ -292,10 +292,11 @@ data.pokemon.moves.stats: power, type, accuracy, pp, effect";
             schema += @"
 
 === Map Data (Map Editor is open) ===
-Access pattern: data.maps.banks[bankNum].maps[mapNum].map.events
+Access pattern: data.maps.banks[bankNum].maps[mapNum].map[0].events[0]
+IMPORTANT: .map[0] and .events[0] are required (single-element tables)
 
 Object Events (NPCs):
-  .events.objects[i]: id, graphics, x, y, elevation, moveType, range, trainerType, trainerRangeOrBerryID, script, flag
+  .events[0].objects[i]: id, graphics, x, y, elevation, moveType, range, trainerType, trainerRangeOrBerryID, script, flag
   - graphics: sprite ID from graphics.overworld.sprites
   - x, y: position on map (0-based)
   - moveType: 0=none, 1=look_around, 2=walk_around, etc.
@@ -303,30 +304,21 @@ Object Events (NPCs):
   - flag: event flag (NPC hidden when flag is set)
 
 Warps:
-  .events.warps[i]: x, y, elevation, warpID, map, bank
-  - warpID: destination warp point ID
-  - map, bank: destination map coordinates
+  .events[0].warps[i]: x, y, elevation, warpID, map, bank
 
 Script Triggers:
-  .events.scripts[i]: x, y, elevation, trigger, index, script
+  .events[0].scripts[i]: x, y, elevation, trigger, index, script
 
 Signposts:
-  .events.signposts[i]: x, y, elevation, kind, arg
-  - kind: 0-4=script signpost, 5-7=hidden item, 8=secret base
-  - arg: script pointer or item ID depending on kind
+  .events[0].signposts[i]: x, y, elevation, kind, arg
 
 Wild Pokemon:
-  data.pokemon.wild[mapId].grass.list[i]: low (min level), high (max level), species
-  data.pokemon.wild[mapId].surf.list[i]: same structure
-  data.pokemon.wild[mapId].fish.list[i]: same structure (0-1=old rod, 2-4=good rod, 5+=super rod)
+  data.pokemon.wild[mapId].grass[0].list[i]: low (min level), high (max level), species
 
-Example - Add NPC that gives item:
-  events = data.maps.banks[3].maps[0].map.events
-  npc = events.objects[0]  # modify existing or find empty slot
-  npc.x = 10
-  npc.y = 8
-  npc.graphics = 5  # sprite ID
-  npc.moveType = 1  # look around";
+Example - Get NPC data:
+  npc = data.maps.banks[3].maps[0].map[0].events[0].objects[0]
+  print(npc.x)
+  print(npc.graphics)";
          }
 
          return schema;
