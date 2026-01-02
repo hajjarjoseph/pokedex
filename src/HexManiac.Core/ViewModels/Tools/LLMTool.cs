@@ -199,15 +199,75 @@ Keep code simple and focused on the specific request.";
          var gameCode = model.GetGameCode();
          var context = $"ROM: {gameCode}";
 
-         // Check if Map Editor is open
-         if (editor.SelectedTab is MapEditorViewModel mapEditor) {
-            context += "\nMap Editor is OPEN.";
-            if (mapEditor.PrimaryMap != null) {
-               context += $"\nCurrent map: Bank {mapEditor.PrimaryMap.MapGroup}, Map {mapEditor.PrimaryMap.MapIndex}";
-            }
+         // Check if Map Editor is open and include map contents
+         if (editor.SelectedTab is MapEditorViewModel mapEditor && mapEditor.PrimaryMap != null) {
+            var map = mapEditor.PrimaryMap;
+            var bankNum = map.MapID / 1000;
+            var mapNum = map.MapID % 1000;
+            context += $"\n\n=== MAP EDITOR OPEN ===";
+            context += $"\nCurrent map: Bank {bankNum}, Map {mapNum}";
+            context += $"\nAccess via: data.maps.banks[{bankNum}].maps[{mapNum}].map.events";
+
+            // List all events on the map
+            context += BuildMapContents(mapEditor);
          }
 
          return context;
+      }
+
+      private string BuildMapContents(MapEditorViewModel mapEditor) {
+         var sb = new System.Text.StringBuilder();
+         var map = mapEditor.PrimaryMap;
+
+         // Get events from the map
+         try {
+            // Object Events (NPCs)
+            var objects = map.EventGroup?.Objects;
+            if (objects != null && objects.Count > 0) {
+               sb.Append($"\n\nObject Events (NPCs) - {objects.Count} total:");
+               for (int i = 0; i < Math.Min(objects.Count, 15); i++) {
+                  var obj = objects[i];
+                  sb.Append($"\n  [{i}] pos=({obj.X},{obj.Y}) graphics={obj.Graphics} moveType={obj.MoveType}");
+                  if (obj.TrainerType > 0) sb.Append($" trainer");
+               }
+               if (objects.Count > 15) sb.Append($"\n  ... and {objects.Count - 15} more");
+            }
+
+            // Warps
+            var warps = map.EventGroup?.Warps;
+            if (warps != null && warps.Count > 0) {
+               sb.Append($"\n\nWarps - {warps.Count} total:");
+               for (int i = 0; i < Math.Min(warps.Count, 10); i++) {
+                  var warp = warps[i];
+                  sb.Append($"\n  [{i}] pos=({warp.X},{warp.Y}) -> bank={warp.Bank} map={warp.Map} warpId={warp.WarpID}");
+               }
+            }
+
+            // Signposts
+            var signposts = map.EventGroup?.Signposts;
+            if (signposts != null && signposts.Count > 0) {
+               sb.Append($"\n\nSignposts - {signposts.Count} total:");
+               for (int i = 0; i < Math.Min(signposts.Count, 10); i++) {
+                  var sign = signposts[i];
+                  sb.Append($"\n  [{i}] pos=({sign.X},{sign.Y}) kind={sign.Kind}");
+               }
+            }
+
+            // Script triggers
+            var scripts = map.EventGroup?.Scripts;
+            if (scripts != null && scripts.Count > 0) {
+               sb.Append($"\n\nScript Triggers - {scripts.Count} total:");
+               for (int i = 0; i < Math.Min(scripts.Count, 10); i++) {
+                  var script = scripts[i];
+                  sb.Append($"\n  [{i}] pos=({script.X},{script.Y})");
+               }
+            }
+
+         } catch {
+            sb.Append("\n(Could not read map events)");
+         }
+
+         return sb.ToString();
       }
 
       private string BuildSchema() {
