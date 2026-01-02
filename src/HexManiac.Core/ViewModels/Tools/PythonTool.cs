@@ -70,7 +70,8 @@ clr.ImportExtensions(HavenSoft.HexManiac.Core.Models)
 
       public ErrorInfo RunPythonScript(string code) {
          var (engine, scope) = (this.engine.Value, this.scope.Value);
-         if (editor.SelectedTab is IEditableViewPort vp) {
+         var vp = FindEditableViewPort();
+         if (vp != null) {
             var anchors = AnchorGroup.GetTopLevelAnchorGroups(vp.Model, () => vp.ChangeHistory.CurrentChange);
             foreach (var key in anchors.Keys) scope.SetVariable(key, anchors[key]);
          }
@@ -105,6 +106,14 @@ clr.ImportExtensions(HavenSoft.HexManiac.Core.Models)
 
       public void Printer(string text) {
          editor.FileSystem.ShowCustomMessageBox(text, false);
+      }
+
+      private IEditableViewPort FindEditableViewPort() {
+         if (editor.SelectedTab is IEditableViewPort vp) return vp;
+         foreach (var tab in editor) {
+            if (tab is IEditableViewPort viewPort) return viewPort;
+         }
+         return null;
       }
 
       public static TextEditorViewModel SetupPythonEditor() {
