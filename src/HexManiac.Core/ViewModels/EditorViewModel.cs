@@ -442,6 +442,13 @@ namespace HavenSoft.HexManiac.Core.ViewModels {
 
       public PythonTool PythonTool { get; }
 
+      private bool showLLMPanel;
+      public bool ShowLLMPanel { get => showLLMPanel; set => Set(ref showLLMPanel, value); }
+      private StubCommand toggleShowLLMPanelCommand;
+      public ICommand ToggleShowLLMPanelCommand => StubCommand(ref toggleShowLLMPanelCommand, () => ShowLLMPanel = !ShowLLMPanel);
+
+      public LLMTool LLMTool { get; }
+
       public Singletons Singletons { get; }
 
       public event EventHandler<Action> RequestDelayedWork;
@@ -608,6 +615,7 @@ namespace HavenSoft.HexManiac.Core.ViewModels {
          }
          PopulateRecentFilesViewModel();
          PythonTool = new PythonTool(this);
+         LLMTool = new LLMTool(this, PythonTool);
          MapTutorials.Load(metadata);
       }
 

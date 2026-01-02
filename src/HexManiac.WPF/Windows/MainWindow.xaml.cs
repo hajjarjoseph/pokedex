@@ -488,6 +488,15 @@ namespace HavenSoft.HexManiac.WPF.Windows {
                FocusPrimaryContent();
             }
          }
+         if (e.PropertyName == nameof(ViewModel.ShowLLMPanel)) {
+            TabContainer.ColumnDefinitions[3].Width = ViewModel.ShowLLMPanel ? new GridLength(LLMToolSplitter.Width) : new GridLength(0);
+            TabContainer.ColumnDefinitions[4].Width = ViewModel.ShowLLMPanel ? new GridLength(350) : new GridLength(0);
+            if (ViewModel.ShowLLMPanel) {
+               LLMTool.InputBox.Focus();
+            } else {
+               FocusPrimaryContent();
+            }
+         }
          if (e.PropertyName.IsAny(nameof(ViewModel.HexConverterVisible), nameof(ViewModel.FindControlVisible), nameof(ViewModel.ShowError))) ResetFocus();
          if (e.PropertyName != nameof(ViewModel.GotoViewModel)) return;
          var args = (ExtendedPropertyChangedEventArgs<GotoControlViewModel>)e;

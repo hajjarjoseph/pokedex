@@ -50,6 +50,7 @@
       <KeyBinding Key="OemMinus" Modifiers="Ctrl+Shift" Command="{Binding Forward}" />
 
       <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding ToggleShowAutomationPanelCommand}" />
+      <KeyBinding Key="L" Modifiers="Ctrl" Command="{Binding ToggleShowLLMPanelCommand}" />
       <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding ToggleMatrix}" />
       <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ShowHexConverter}">
          <KeyBinding.CommandParameter>
@@ -252,6 +253,7 @@
                      </MenuItem.CommandParameter>
                   </MenuItem>
                   <MenuItem Header="Toggle _Automation Tool" IsCheckable="True" IsChecked="{Binding ShowAutomationPanel}" InputGestureText="Ctrl+R" />
+                  <MenuItem Header="Toggle AI _Assistant" IsCheckable="True" IsChecked="{Binding ShowLLMPanel}" InputGestureText="Ctrl+L" />
                   <Separator/>
                   <MenuItem Header="_Spartan Mode" IsCheckable="True" IsChecked="{Binding SpartanMode}">
                      <MenuItem.ToolTip>
@@ -602,6 +604,8 @@
                   <ColumnDefinition Width="*"/>
                   <ColumnDefinition Width="0"/>
                   <ColumnDefinition Width="0"/>
+                  <ColumnDefinition Width="0"/>
+                  <ColumnDefinition Width="0"/>
                </Grid.ColumnDefinitions>
                <TabControl Name="Tabs" ItemsSource="{Binding}" SelectedIndex="{Binding SelectedIndex}">
                   <TabControl.Style>
@@ -689,6 +693,10 @@
                <GridSplitter Name="PythonToolSplitter" Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource Backlight}" Width="4"/>
                <DockPanel Grid.Column="2">
                   <hsg3hv:PythonPanel x:Name="PythonTool" DataContext="{Binding PythonTool}"/>
+               </DockPanel>
+               <GridSplitter Name="LLMToolSplitter" Grid.Column="3" HorizontalAlignment="Stretch" Background="{DynamicResource Backlight}" Width="4"/>
+               <DockPanel Grid.Column="4">
+                  <hsg3hv:LLMPanel x:Name="LLMTool" DataContext="{Binding LLMTool}"/>
                </DockPanel>
             </Grid>
             <Rectangle Fill="{DynamicResource Background}" Name="GotoBackground" Visibility="{Binding GotoViewModel.ControlVisible, Converter={StaticResource BoolToVisibility}}"/>
